@@ -24,22 +24,26 @@ Application structure:
 ```
     /src/main/boot/AppLauncher.groovy  Application Bootstrap Verticle
     /src/main/conf/AppProperties.json  Application conf - becomes container.config
-    /src/main/groovy/     Module Bootstrap
-                    App.groovy	
-		    mod.js
-		    <Assorted Verticles>
-	            <other supporting classes>
+    /src/main/groovy/     Module Files
+                    /App.groovy         Module Bootstrap Verticle       
+                    /mod.js
+                    /<Assorted Verticles> Other Verticles can live here as files
+                    /<other supporting classes> And look, we have a place for supporting code we write
 ```
  
  Deploying this using
  `gradle runVert`
+
+
  
  Builds your application's deployment layout to build/stage/. The module is named based on the modulename and version in gradle.properties
- 
+ It will also deploy two simple verticles in the module available at localhost:3434 and localhost:3435
+ See /src/main/groovy/HelloInterwebs.groovy and AnotherVerticle.groovy
+
 ## TODO
-Integrate the mod.js configs in the container layer config
-Figure out how to update code in-place. Maybe with embedded vert-x
-Make more robust :)
+* Integrate the mod.js configs in the container layer config
+* Figure out how to update code in-place. Maybe with embedded vert-x
+* Make more robust :)
 
  
 
