@@ -1,0 +1,116 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+def buildDir = 'build'
+def workDir = "${buildDir}/work"
+def appZip = 'spun-fetcher-vertx.zip'
+def stageDir = "${buildDir}/stage"
+def mainVerticle = "AppLauncher.groovy"
+
+def moduleName = "$modulename-$version"
+apply plugin: 'groovy'
+
+defaultTasks = ['assemble']
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+
+jar.enabled = false // We don't produce a jar
+
+configurations {
+  provided
+  jars
+}
+
+repositories {
+  mavenCentral()
+  maven { url "http://repository.codehaus.org" }
+  maven { url 'http://repository.jboss.org/maven2/' }
+  mavenRepo url:'http://repo.springsource.org/libs-snapshot'
+  add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+    name = 'vertx.io'
+    addArtifactPattern 'http://[organisation]/downloads/[module]-[revision].[ext]'
+  }
+}
+
+dependencies {
+  
+  compile 'rome:rome:1.0'
+  compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.5.2'
+  provided "org.vert-x:vertx-core:$vertxVersion"
+   provided "org.vert-x:vertx-platform:$vertxVersion"
+   groovy "org.codehaus.groovy:groovy:2.0.5"
+  }
+
+sourceSets {
+  main {
+    compileClasspath = compileClasspath + configurations.provided
+  }
+}
+
+
+
+// copy the actual application super-module
+// the groovy jar is excluded from the lib. 
+// If you get classcastexceptions casting App to Script at startup
+// it's a conflict with groovy versions or meta-class-pathing excluding 
+// the groovy jar fixes it
+	
+task stageMods(type:Copy, dependsOn:'classes') {
+	into "$stageDir/mods/$moduleName"
+	from 'src/main/groovy'	
+    into( 'lib' ) {
+      from configurations.compile
+	   exclude 'groovy-2.0.5.jar'
+	 }
+	 
+   
+	
+}
+
+// copy the application bootstrap code
+task stageMain(type:Copy, dependsOn: 'stageMods') {
+	filter(ReplaceTokens, tokens:[version:"$version".toString(),modulename:"$modulename".toString()])
+	from 'src/main/boot'	
+	from 'src/main/conf'
+	into "$stageDir"
+}
+
+
+
+task collectDeps(type: Copy) {
+  group = 'vert.x'
+  description = 'conveniently collect dependencies for other IDEs'
+  destinationDir = file("build/deps")
+  into("compile") {
+    from configurations.compile
+  }
+  into("test") {
+    from configurations.testCompile
+  }
+}
+
+
+
+// This assumes vertx is in your path already.
+task runVertx(type:Exec,dependsOn: 'stageMain') {
+  workingDir "$stageDir/"
+  executable 'vertx'
+  args = ['run', "$mainVerticle", '-conf', "AppProperties.json"]
+ 
+}
+
+
+task wrapper(type: Wrapper) {
+}
+
+task setup(dependsOn: 'wrapper') << {
+  mkdir 'src/test'
+  mkdir 'src/main/resources'
+  mkdir 'src/main/conf'
+  mkdir 'src/main/boot'
+  mkdir 'src/main/groovy'
+  ant.move(file:"gradlew", toFile:"mk")
+  ant.move(file:"gradlew.bat", toFile:"wmk.bat")
+  
+}
