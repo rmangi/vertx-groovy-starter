@@ -21,19 +21,26 @@ In effect we have two bootstraps which for convention we can call Application an
 There is only 1 Application bootstrap, but in theory we could have multiple Module bootstraps for completely separate services with their own set of dependencies.
 
 Application structure:
+```
     /src/main/boot/AppLauncher.groovy  Application Bootstrap Verticle
     /src/main/conf/AppProperties.json  Application conf - becomes container.config
     /src/main/groovy/     Module Bootstrap
                     App.groovy	
- 						mod.js
-						<Assorted Verticles>
-						<other supporting classes>
+		    mod.js
+		    <Assorted Verticles>
+	            <other supporting classes>
+```
  
  Deploying this using
  `gradle runVert`
  
  Builds your application's deployment layout to build/stage/. The module is named based on the modulename and version in gradle.properties
  
+## TODO
+Integrate the mod.js configs in the container layer config
+Figure out how to update code in-place. Maybe with embedded vert-x
+Make more robust :)
+
  
 
 
