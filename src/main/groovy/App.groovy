@@ -6,6 +6,8 @@ logger.info "ModuleLauncherConfig: " + container.config.dump()
 
 logger.info "Deploying spun"
 
+//TODO : read in mod.json
+
 def moduleConfig = ['app_message':'A message from AppConfig']
 
 moduleConfig.putAll(container.config)
